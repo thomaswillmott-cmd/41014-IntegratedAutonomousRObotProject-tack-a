@@ -85,6 +85,7 @@ Camera observations correct the EKF; LiDAR provides mapping/clearance, not local
 **0.037px**, held-out range RMSE **7.44mm** across 34 detections from 36 validation
 poses. Zero distortion is constrained for the ideal pinhole renderer; these are
 simulation results, not physical-camera calibration.
+Reproduce calibration with `python calibrate_camera.py` (replaces the saved calibration).
 
 ## C. Estimation
 
@@ -148,6 +149,21 @@ Evidence: [comparison.csv](results/submission_evidence/comparison.csv) and
 [recorded metrics](results/submission_evidence/all_results.json). Three successes
 do not establish reliability for arbitrary layouts. Tracking includes control lag
 and reference switches, explaining why it can exceed estimation error.
+
+The recorded seed-22 comparison holds layout and seed constant:
+
+| Mode | Dock time (s) | Mean estimation error (cm) | Active-path RMSE (cm) | Contact steps |
+| --- | --- | --- | --- | --- |
+| Clean comparison | 38.78 | 1.13 | 1.82 | 0 |
+| All injected errors | 39.62 | 1.20 | 2.11 | 0 |
+
+This single paired trial shows modest degradation in these metrics; it does not
+isolate individual disturbances. Clean mode still has contact dynamics and
+camera localisation/calibration error, so its estimation error need not be zero.
+Matching [nominal evidence](results/submission_evidence/demo_nominal_seed22/summary.json),
+[disturbed evidence](results/submission_evidence/demo_disturbed_seed22/summary.json)
+and [tracking plots](results/submission_evidence/demo_disturbed_seed22/tracking_errors.png)
+are included.
 
 Offline success requires controller completion, true final distance below 8cm,
 heading error below 0.12rad, and zero logged obstacle contacts. Ground truth is

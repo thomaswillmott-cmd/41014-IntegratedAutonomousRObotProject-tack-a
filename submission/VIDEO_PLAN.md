@@ -1,26 +1,30 @@
 # Five-minute demonstration plan
 
-Aim for **4:30–4:50**, leaving room for natural pauses. Record your own voice;
-the generated simulation clips are silent. Explain only claims you understand.
+The prepared edit lasts **4:13.52**. Add your own voice over
+`media/review_edit.mp4`; it is silent. Explain only claims you understand.
 The media folder is local and intentionally excluded from GitHub.
 
 ## What to show
 
 | Time | Visual | Talking points |
 | --- | --- | --- |
-| 0:00–0:25 | Project title and README task/pipeline | Thomas Willmott, Track A, TurtleBot3 in MuJoCo; objective is obstacle navigation and visual docking. Individual implementation; explain AI assistance accurately. |
-| 0:25–1:00 | README model and frame diagram | Differential drive, state x/y/heading, wheel encoders, camera corrections, LiDAR mapping. Controller receives estimated state. |
-| 1:00–1:45 | `media/nominal_seed22/simulation.mp4` | Genuine clean comparison. Explain room, active path, camera/LiDAR, actual and estimated pose, and numeric uncertainty. Play the complete clip at 1x; use remaining time to hold its final frame. |
-| 1:45–2:15 | README EKF and controller section | Prediction versus correction, covariance, chosen Q/R and LQR weights. State why gain choices are engineering settings. |
-| 2:15–3:00 | `media/disturbed_seed22/simulation.mp4` | All injections, same layout/seed. Highlight push at 10s, camera blackout 12–18s, slower dead reckoning, restored corrections and visual docking. Play complete clip at 1x; hold its final frame as needed. |
-| 3:00–3:45 | Saved batch comparison and tracking/docking graphs | Success counts, completion time, estimation error versus tracking error, final dock distance/heading. Explain reference-switch spikes and uncertainty growth. |
-| 3:45–4:20 | Limits and failure discussion | Restricted layouts, known starting/station poses, ideal camera, conservative/tuned covariances, no physical charging. Earlier failures are useful development evidence; do not present them as results from the final version. |
-| 4:20–4:45 | Run commands, sources and contribution statement | Repeatable seeds, batch command, declared AI assistance and ROBOTIS assets; point to repository/video links. |
+| 0:00–0:20 | Title and contribution | Thomas Willmott, Track A, objective and accurate AI declaration. |
+| 0:20–0:55 | Model, sensing and frames | Differential drive, state x/y/heading, encoders, camera correction and LiDAR mapping. |
+| 0:55–1:33.84 | Complete nominal clip, 1x | Room, active route, camera/LiDAR, truth/estimate/uncertainty and visual docking. |
+| 1:33.84–2:03.84 | EKF and controller | Prediction/correction, uncertainty, LQR weights and limits of the stability result. |
+| 2:03.84–2:43.52 | Complete disturbed clip, 1x | Push occurs at video time about 2:13.84; forced blackout at about 2:15.84–2:21.84. Slower dead reckoning and eventual visual docking. |
+| 2:43.52–3:18.52 | Three-seed results | Success, contacts, time, estimation/tracking error, final distance and heading. |
+| 3:18.52–3:43.52 | Tracking graph | Initial-plan deviation versus active-path error; reference switches do not mean physical jumps. |
+| 3:43.52–4:13.52 | Limits, reproducibility and sources | Known poses, ideal camera, restricted layouts, no full SLAM/hardware/charging; repeatable commands and declared sources. |
+
+Rebuild after recording the two clips with `python submission/build_video_edit.py`.
+Preserve/rename an existing edit first; the builder does not overwrite it.
 
 ## Narration draft
 
 Use this as a guide, not a claim of unaided authorship or a script to memorise
-without understanding. Adjust timing to your speaking pace.
+without understanding. Shorten sentences to fit each section, or hold a frame
+longer in your editor while keeping the total below five minutes.
 
 **Opening:** “This is my Track A integrated sensors and control project. It uses
 a TurtleBot3 model in MuJoCo to navigate an obstacle-filled room and dock near an
@@ -65,6 +69,12 @@ tracking error, which measures distance from the actual robot to the active path
 The first path can change when obstacles are discovered, so deviation from the
 initial plan does not necessarily mean poor control. Final docking distance and
 heading are reported separately.”
+
+**Tracking graph:** “The top panel measures deviation from the first generated
+route. It includes deliberate route changes. The bottom panel measures distance
+to the currently active reference. At the docking transition, that reference
+changes to the station approach line, which can cause a jump without the robot
+physically jumping. Neither graph measures EKF position estimation error.”
 
 **Limits and conclusion:** “These results cover restricted generated layouts,
 not arbitrary rooms. The initial pose and station pose are known, the camera is
