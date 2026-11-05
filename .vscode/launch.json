@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "TurtleBot3 room demo",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_robot.py",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

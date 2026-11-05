@@ -1,0 +1,12 @@
+{
+  "seed": 22,
+  "clean": false,
+  "fps": 25,
+  "frames": 992,
+  "playback": "1x; 50 Hz simulation sampled at 25 fps, with initial/final frames",
+  "video_duration_s": 39.68,
+  "simulated_duration_s": 39.620000000002456,
+  "docking_success": true,
+  "audio": "None; record your own narration",
+  "source_sha256": "a19984aeeb221faa0837005c576d52af5fe043edc4e9fd704d0f120c1680db6d"
+}

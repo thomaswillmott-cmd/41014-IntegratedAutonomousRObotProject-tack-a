@@ -1,0 +1,160 @@
+{
+  "seed": 22,
+  "scenario": {
+    "seed": 22,
+    "layout": "random",
+    "objective": "time",
+    "mapping": "lidar",
+    "controller": "lqr",
+    "clean": true,
+    "noisy": false,
+    "dropout": false,
+    "disturbance": false,
+    "blocked": false,
+    "recovery": true,
+    "wheel_feedback": true,
+    "camera_calibration": true,
+    "q_scale": 1.0,
+    "start": [
+      -2.0,
+      -1.5,
+      0.0
+    ],
+    "obstacles": [
+      [
+        "obstacle_0",
+        "cylinder",
+        [
+          -0.23908474873462127,
+          -0.9320081687810137
+        ],
+        [
+          0.19062700479135347,
+          0.19062700479135347
+        ]
+      ],
+      [
+        "obstacle_1",
+        "cylinder",
+        [
+          0.4350004658621618,
+          -0.1908894224797517
+        ],
+        [
+          0.2985210742656242,
+          0.2985210742656242
+        ]
+      ],
+      [
+        "obstacle_2",
+        "cylinder",
+        [
+          0.9011849641501573,
+          0.8853397712255768
+        ],
+        [
+          0.1861726520970311,
+          0.1861726520970311
+        ]
+      ],
+      [
+        "obstacle_3",
+        "cylinder",
+        [
+          -0.23268404640696705,
+          1.1073066160879068
+        ],
+        [
+          0.22675165856885449,
+          0.22675165856885449
+        ]
+      ],
+      [
+        "obstacle_4",
+        "cylinder",
+        [
+          0.8969296479176523,
+          -1.3788637549075915
+        ],
+        [
+          0.20922486043748617,
+          0.20922486043748617
+        ]
+      ]
+    ]
+  },
+  "source_sha256": "a19984aeeb221faa0837005c576d52af5fe043edc4e9fd704d0f120c1680db6d",
+  "simulated_seconds": 38.78000000000143,
+  "route_complete": true,
+  "docking_success": true,
+  "docking_time_s": 38.78000000000143,
+  "path_length_m": 5.477825176155358,
+  "position_rmse_m": 0.012321316556906317,
+  "final_true_goal_distance_m": 0.047723487358458314,
+  "final_heading_error_rad": 0.0022442730230554098,
+  "tracking_rmse_m": 0.02015427038675889,
+  "active_path_rmse_m": 0.01820681260259065,
+  "continuous_estimation_rmse_m": 0.012305428327821109,
+  "average_position_error_m": 0.011321336981587897,
+  "path_versions": 25,
+  "recovery_state": "NORMAL",
+  "recovery_events": [
+    {
+      "time": 0.020000000000000004,
+      "event": "recovery",
+      "state": "SLOW",
+      "reason": "Encoder + LiDAR navigation; no fresh camera correction"
+    },
+    {
+      "time": 9.419999999999815,
+      "event": "recovery",
+      "state": "NORMAL",
+      "reason": "Consistent camera corrections restored"
+    },
+    {
+      "time": 14.220000000001418,
+      "event": "recovery",
+      "state": "SLOW",
+      "reason": "Encoder + LiDAR navigation; no fresh camera correction"
+    },
+    {
+      "time": 26.019999999996458,
+      "event": "recovery",
+      "state": "NORMAL",
+      "reason": "Consistent camera corrections restored"
+    }
+  ],
+  "wheel_distance_scale": [
+    1.0,
+    1.0
+  ],
+  "camera_calibration_updates": 0,
+  "planner_clearance": {
+    "physical_radius_m": 0.24413111231467408,
+    "planning_radius_m": 0.16,
+    "uncertainty_m": 0.005671499818390246,
+    "grid_allowance_m": 0.014142135623730949,
+    "total_m": 0.1798136354421212,
+    "sigma_factor": 0.5
+  },
+  "mean_nees": 0.21238679064908425,
+  "nees_95_coverage": 1.0,
+  "control_effort": 1.7223073263255093,
+  "camera_enabled": true,
+  "camera_updates": 89,
+  "camera_rejected": 0,
+  "replans": 24,
+  "collision_control_steps": 0,
+  "collision_physics_steps": 0,
+  "final_estimate": [
+    2.258110748463993,
+    1.4007262772769513,
+    -0.003682656884834934
+  ],
+  "final_truth": [
+    2.2522765993142193,
+    1.3999090459601002,
+    -0.0022442730230552025
+  ],
+  "events": []
+}

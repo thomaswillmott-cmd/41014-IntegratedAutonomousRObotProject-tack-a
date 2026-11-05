@@ -1,0 +1,11 @@
+{
+  "seeds": [
+    524882,
+    407433,
+    547246
+  ],
+  "duration": 180,
+  "all_errors": true,
+  "layout": "random",
+  "headless": true
+}

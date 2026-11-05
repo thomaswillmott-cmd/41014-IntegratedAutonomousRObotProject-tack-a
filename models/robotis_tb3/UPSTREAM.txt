@@ -1,0 +1,5 @@
+ROBOTIS-GIT/robotis_mujoco_menagerie
+Commit: d8344c0dbe7a00208d0301111523dde65efc174a
+Subdirectory: robotis_tb3
+License: Apache-2.0 (see LICENSE)
+Original model and meshes unchanged. Track A scene adds sensors at load time.

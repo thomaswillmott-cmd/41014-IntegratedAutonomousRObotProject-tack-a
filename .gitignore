@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+MUJOCO_LOG.TXT
+results/*
+!results/submission_evidence/
+!results/submission_evidence/**
+submission/media/
+*.mp4
+*.avi
+*.zip
+.env
+.env.*

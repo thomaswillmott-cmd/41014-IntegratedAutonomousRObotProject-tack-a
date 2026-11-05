@@ -1,0 +1,19 @@
+{
+  "seed": 22,
+  "docking_success": true,
+  "simulated_seconds": 39.620000000002456,
+  "docking_time_s": 39.620000000002456,
+  "collision_control_steps": 0,
+  "average_position_error_m": 0.011961092866541023,
+  "position_rmse_m": 0.015948141420352776,
+  "active_path_tracking_rmse_m": 0.021114903727091447,
+  "initial_plan_deviation_rmse_m": 0.07944287496881973,
+  "navigation_tracking_rmse_m": 0.014160825314590335,
+  "docking_tracking_rmse_m": 0.0353229856493393,
+  "final_docking_distance_m": 0.04861428482462144,
+  "final_heading_error_deg": 0.008580004200909982,
+  "control_effort": 1.6099707872137006,
+  "initial_path_id": 1,
+  "initial_plan_note": "First usable navigation path, unchanged. Deviation scored before docking phases only; replanning is not a control failure.",
+  "source_sha256": "a19984aeeb221faa0837005c576d52af5fe043edc4e9fd704d0f120c1680db6d"
+}
