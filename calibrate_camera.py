@@ -1,8 +1,4 @@
-"""Recover pinhole intrinsics from rendered marker corners, then validate.
-
-The robot is placed at known poses only in this isolated calibration experiment.
-Calibration truth is never supplied to the navigation estimator/controller.
-"""
+"""Camera calibration and validation. Known poses stay in this experiment only."""
 import argparse
 import json
 import cv2
@@ -48,7 +44,7 @@ def main():
         rms, K_fit, distortion, _, _ = cv2.calibrateCamera(objects, pixels, (640, 480), K_initial, np.zeros(5), flags=flags)
         theoretical = camera.K.copy()
         camera.K = K_fit
-        # Held-out upright navigation poses, separate from tilted calibration rig.
+        # Separate upright validation poses; not used for fitting.
         for x in [1.0, 1.4, 1.8, 2.15]:
             for y in [1.25, 1.4, 1.55]:
                 for yaw in [-.12, 0., .12]:

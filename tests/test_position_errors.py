@@ -1,4 +1,4 @@
-"""Position error geometry, path switches and scoring retention."""
+"""Error measurements and scoring across route changes."""
 import unittest
 import numpy as np
 from track_a.evaluation import PathEvaluation, nearest_on_path

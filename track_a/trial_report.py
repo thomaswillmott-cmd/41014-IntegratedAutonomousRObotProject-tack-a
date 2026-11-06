@@ -1,4 +1,4 @@
-"""Offline assessment plots. Ground truth is read only from saved evaluation data."""
+"""Graphs from saved evaluation data only."""
 import csv
 import json
 from pathlib import Path
@@ -17,7 +17,7 @@ DOCK_PHASES = {'ACQUIRE', 'DOCK', 'VERIFY', 'DOCKED'}
 
 
 def initial_plan(history):
-    """Skip empty initial plans; retain the first usable navigation polyline exactly."""
+    """Keep the first usable navigation path unchanged."""
     for version in history:
         if version['kind'] == 'navigation' and len(version['points']) >= 2:
             return version
@@ -25,7 +25,7 @@ def initial_plan(history):
 
 
 def reference_deviations(samples, version):
-    """No zero substitution: no plan, pre-plan, unscored and docking samples are NaN."""
+    """Missing references stay NaN; docking is excluded from initial-plan deviation."""
     values = np.full(len(samples), np.nan)
     if version is None:
         return values

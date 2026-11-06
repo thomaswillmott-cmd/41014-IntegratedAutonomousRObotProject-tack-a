@@ -1,4 +1,4 @@
-"""Run the TurtleBot3 room demo. Try: python run_robot.py --help"""
+"""Single robot run. Use --help for the available settings."""
 
 import argparse
 import csv
@@ -53,7 +53,7 @@ def main():
     error_options = args.all_errors or args.sensor_noise or args.noisy or args.dropout or args.disturbance
     if args.clean and error_options:
         parser.error('--clean cannot be combined with injected-error options')
-    # No explicit mode: run the complete injected-error experiment.
+    # All injected errors on unless another mode is selected.
     if args.all_errors or not (args.clean or error_options):
         args.noisy = args.dropout = args.disturbance = True
     clean = args.clean

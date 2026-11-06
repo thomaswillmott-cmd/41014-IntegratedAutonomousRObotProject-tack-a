@@ -1,4 +1,4 @@
-"""Plot a saved trial: python plot_results.py results/validation_seed1"""
+"""Saved trial plots. Run: python plot_results.py results/seed22"""
 
 import argparse
 from pathlib import Path
@@ -13,7 +13,7 @@ import json
 
 
 def plot_position_errors(folder):
-    """Single position-estimation chart; detailed tracking data stays in the CSV."""
+    """Position error graph; tracking details stay in the CSV."""
     folder = Path(folder)
     if not (folder/'position_errors.csv').exists():
         return

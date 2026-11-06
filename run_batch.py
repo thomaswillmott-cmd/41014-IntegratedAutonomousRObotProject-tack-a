@@ -1,4 +1,4 @@
-"""Three sequential random-layout trials, with all injected errors and saved assessment plots."""
+"""Three layouts back to back, with all errors and saved results."""
 import argparse
 import csv
 from datetime import datetime

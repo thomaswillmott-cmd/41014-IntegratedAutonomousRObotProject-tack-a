@@ -1,16 +1,14 @@
-"""Footprint-based planner clearance, without simulator truth input."""
+"""Planner clearance from body size and estimated uncertainty."""
 import numpy as np
 
-# Matches the runtime collision geometry in world.py. Axle-origin chassis box
-# spans x=[-.20,.08], y=[-.14,.14]; wheel centres y=+/-.144, halfwidth .009.
-# A disc encloses the robot for all yaw angles, including turn-in-place.
+# Body bounds from world.py: x=[-.20,.08], y=[-.14,.14]; wheel y=+/-.144, halfwidth .009.
+# Full turning radius includes the corners.
 CHASSIS_RADIUS = float(np.hypot(.20, .14))
 WHEEL_RADIUS_BOUND = float(np.hypot(.033, .144+.009))
 ROBOT_RADIUS = max(CHASSIS_RADIUS, WHEEL_RADIUS_BOUND)
 
 
-# Compact translation planning envelope. This does NOT enclose turning corners;
-# every automatic Navigator command also needs a full-body local swept check.
+# Compact planning radius; turning corners still need the live body check.
 PLANNING_RADIUS = .16
 BODY_REAR = .20
 BODY_FRONT = .08
@@ -19,12 +17,7 @@ LOCAL_NOISE_MARGIN = .015
 
 
 def clearance_budget(covariance, resolution, sigma_factor=.5):
-    """Return physical, uncertainty and grid contributions in metres.
-
-    Half a major-axis sigma is an engineering allowance, NOT a 95% collision-risk
-    bound. No clipping hides high estimator uncertainty. Ground-truth error is
-    excluded because it is unavailable to the controller on a real robot.
-    """
+    """Clearance terms in metres. Half a sigma is a tuning allowance, not a 95% safety bound; uncertainty stays uncapped."""
     xy = np.asarray(covariance, dtype=float)[:2, :2]
     sigma = float(np.sqrt(max(0., np.linalg.eigvalsh((xy+xy.T)/2).max())))
     grid = float(resolution/np.sqrt(2))

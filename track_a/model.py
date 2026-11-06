@@ -1,4 +1,4 @@
-"""Planar state-space and measurement Jacobians for analysis and testing."""
+"""State-space model and Jacobians for the analysis checks."""
 import numpy as np
 from .world import CAMERA_OFFSET, MARKER_XY
 

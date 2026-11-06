@@ -1,4 +1,4 @@
-"""Verify reference switches and missing data cannot create artificial joins."""
+"""No graph joins across missing routes or path changes."""
 import unittest
 from track_a.path_views import path_runs
 

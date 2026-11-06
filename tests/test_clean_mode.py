@@ -1,4 +1,4 @@
-"""Clean mode must bypass injections without bypassing sensor-based control."""
+"""Clean run checks: injections off, sensor feedback still on."""
 import unittest
 from unittest.mock import Mock, patch
 import numpy as np

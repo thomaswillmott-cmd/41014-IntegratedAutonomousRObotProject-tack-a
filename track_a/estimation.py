@@ -1,7 +1,4 @@
-"""Planar EKF. Inputs are wheel increments and detected marker range/bearing.
-
-No MuJoCo model or simulator truth is available to this module.
-"""
+"""EKF prediction from wheels, correction from camera. No simulator pose input."""
 
 import numpy as np
 
@@ -31,13 +28,12 @@ class PoseEKF:
         G = np.array([[c/2 + ds*s/(2*WHEEL_SEPARATION), c/2 - ds*s/(2*WHEEL_SEPARATION)],
                       [s/2 - ds*c/(2*WHEEL_SEPARATION), s/2 + ds*c/(2*WHEEL_SEPARATION)],
                       [-1/WHEEL_SEPARATION, 1/WHEEL_SEPARATION]])
-        # Initial assumed wheel-distance noise; requires empirical tuning later.
+        # Assumed wheel-distance noise; still a tuning value.
         variance = (0.02 * np.abs([left, right]))**2 + 1e-9
         self.x += [ds*c, ds*s, da]
         self.x[2] = wrap(self.x[2])
         self.P = F @ self.P @ F.T + G @ np.diag(variance) @ G.T
-        # Motion-dependent uncertainty for unmodelled slip. Wheel readout noise
-        # alone cannot describe lateral motion or persistent wheel-radius error.
+        # Extra uncertainty for slip and model error beyond encoder noise.
         rotation = np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
         slip = abs(ds)*np.diag([.0009, .0036, .0006]) + abs(da)*np.diag([1e-5, 1e-5, .0009])
         self.P += self.q_scale * rotation@slip@rotation.T
@@ -57,14 +53,14 @@ class PoseEKF:
             difference = self.observation(shifted) - expected
             difference[1] = wrap(difference[1])
             H[:, j] = difference / 1e-5
-        # Perspective range uncertainty grows with distance. Provisional model.
+        # Allow more range uncertainty at longer distances.
         R = np.diag([(0.015 + 0.015 * measurement[0]**2)**2, np.deg2rad(1.5)**2])
         measurement = np.asarray(measurement)
         if yaw is not None:
             H = np.vstack([H, [0, 0, 1]])
             expected = np.r_[expected, self.x[2]]
             measurement = np.r_[measurement, yaw]
-            # Planar PnP heading is less reliable at long distances / frontal views.
+            # Allow for weaker PnP heading at long range or frontal views.
             expanded = np.zeros((3, 3))
             expanded[:2, :2] = R
             expanded[2, 2] = np.deg2rad(5 + 2*measurement[0])**2

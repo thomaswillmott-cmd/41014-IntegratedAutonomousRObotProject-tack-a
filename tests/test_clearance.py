@@ -1,4 +1,4 @@
-"""Footprint and covariance-driven clearance checks."""
+"""Body size and clearance checks."""
 import unittest
 import numpy as np
 from track_a.clearance import ROBOT_RADIUS, PLANNING_RADIUS, clearance_budget
@@ -37,8 +37,7 @@ class CompactFootprintChecks(unittest.TestCase):
     def test_straight_gap_is_allowed_but_turning_corners_are_checked(self):
         from track_a.resilience import local_motion_clear
         angles = np.linspace(-np.pi, np.pi, 180, endpoint=False)
-        # Parallel walls 36 cm apart: wide enough for the real wheels plus the
-        # reduced buffer, but not for the robot to turn sideways in the gap.
+        # 36cm gap: straight travel fits; a sideways turn does not.
         ranges = np.minimum(5., .18/np.maximum(np.abs(np.sin(angles)), 1e-8))
         self.assertTrue(local_motion_clear(.10, 0., ranges, angles))
         self.assertFalse(local_motion_clear(0., 1.5, ranges, angles))

@@ -1,4 +1,4 @@
-"""Assemble a room around the unmodified ROBOTIS TurtleBot3 model."""
+"""Room and sensors around the ROBOTIS TurtleBot3 assets."""
 
 from pathlib import Path
 import xml.etree.ElementTree as ET
@@ -10,7 +10,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 START = np.array([-2.0, -1.5, 0.0])
 MARKER_XY = np.array([2.82, 1.4])
-MARKER_SIZE = 0.30  # Black outer square, excluding the white margin (metres).
+MARKER_SIZE = 0.30  # Black marker width, excluding the white border, in metres.
 CAMERA_OFFSET = 0.11
 WHEEL_RADIUS = 0.033
 WHEEL_SEPARATION = 0.288
@@ -52,14 +52,13 @@ def load_world(scenario=None):
     base = world.find("body[@name='base']")
     base.set('pos', f'{scenario.start[0]} {scenario.start[1]} 0.005')
     base.set('euler', f'0 0 {scenario.start[2]}')
-    # Keep ROBOTIS meshes for appearance, use smooth cylinders for wheel contact.
-    # Low-friction rear supports must override the floor's contact properties.
+    # Keep ROBOTIS visuals; use cylinders for wheel contact.
+    # Rear supports take priority over floor friction.
     for geom in base.findall('geom'):
         if geom.get('type') == 'sphere':
             geom.set('priority', '1')
         elif geom.get('class') == 'collision' and geom.get('mesh') == 'waffle_pi_base':
-            # Its convex mesh hull includes low rear details and otherwise drags
-            # on the floor. Separate chassis contact from the caster supports.
+            # Separate chassis contact from the rear supports to avoid floor dragging.
             geom.attrib.clear()
             geom.attrib.update(name='chassis_collision', type='box',
                                pos='-0.06 0 0.05', size='0.14 0.14 0.025', group='3')

@@ -1,8 +1,4 @@
-"""Assemble the silent review edit from genuine record_demo.py clips.
-
-Run from the project root: python submission/build_video_edit.py
-Add your own narration in a video editor; no audio is generated here.
-"""
+"""Build the silent edit from recorded clips; add narration separately."""
 import json
 from pathlib import Path
 import textwrap

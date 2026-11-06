@@ -1,4 +1,4 @@
-"""Independent geometry, control and failure-mode regression checks."""
+"""Geometry, tracking and blocked-route checks."""
 import unittest
 from unittest.mock import patch
 import numpy as np
@@ -59,8 +59,7 @@ class NavigationChecks(unittest.TestCase):
     def test_control_keeps_running_without_truth_evaluation(self):
         sim = Simulation(camera=False)
         try:
-            # Evaluation is disabled, and reading truth raises. Sensing/navigation
-            # must still work. This tests the dependency boundary in execution.
+            # Navigation must still run when truth access raises an error.
             with patch.object(sim, 'record_evaluation'), patch.object(sim, 'true_pose_for_evaluation', side_effect=AssertionError('Truth leaked')):
                 for _ in range(20):
                     sim.step()

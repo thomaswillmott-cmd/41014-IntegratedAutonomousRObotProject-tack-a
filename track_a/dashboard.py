@@ -1,4 +1,4 @@
-"""Camera, LiDAR and evaluation display. Does not supply inputs to control."""
+"""Sensor and results display only; nothing here feeds control."""
 
 import cv2
 import numpy as np
@@ -115,7 +115,7 @@ def dashboard(sim, paused=False):
     marker = 'available' if sim.measurement is not None else 'unavailable'
     text(f'Marker: {marker} | LiDAR nearest: {sim.ranges.min():.2f}m', 255, 634, .44)
 
-    # Compact evaluation panel; its physical truth metrics never feed navigation.
+    # Evaluation display only.
     cv2.rectangle(canvas, (748, 489), (1090, 668), (39, 45, 53), -1)
     scenario = sim.scenario
     enabled = not scenario.clean

@@ -1,7 +1,4 @@
-"""Baseline waypoint feedback, using estimated state and LiDAR only.
-
-This is a proportional learning baseline, NOT the final required LQR tracker.
-"""
+"""Original proportional waypoint baseline; the LQR tracker is in navigation.py."""
 
 import numpy as np
 
@@ -43,7 +40,7 @@ class WaypointDriver:
         if abs(error) > 0.65:
             v = 0.0
         front = ranges[np.abs(angles) < np.deg2rad(25)].min()
-        # Collision stop/slowdown, not a general-purpose local planner.
+        # Local stop/slowdown only.
         v *= float(np.clip((front - 0.27)/0.35, 0, 1))
         self.status = f'Waypoint {self.index+1}/{len(WAYPOINTS)}'
         if front < 0.27 and v == 0 and abs(error) < 0.65:

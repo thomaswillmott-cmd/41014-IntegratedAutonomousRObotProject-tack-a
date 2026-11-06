@@ -1,4 +1,4 @@
-"""Independent synthetic fault/recovery and drive-control checks."""
+"""Fault recovery and wheel-feedback checks."""
 import unittest
 from unittest.mock import patch
 import numpy as np
@@ -34,8 +34,7 @@ class ResilienceChecks(unittest.TestCase):
         supervisor = RecoverySupervisor()
         supervisor.camera_result(0., True, self.pose)
         for t in [1.1, 21., 120.]:
-            # Even prolonged loss/high covariance must not invent a camera
-            # correction or change the controller's route/turning direction.
+            # Camera loss must not invent corrections or change the route direction.
             command = supervisor.command(t, self.pose, np.eye(3)*.1, t,
                                          (.2, .4), self.ranges, self.angles, 'NAVIGATE')
             np.testing.assert_allclose(command, (.15, .3))
@@ -46,7 +45,7 @@ class ResilienceChecks(unittest.TestCase):
         supervisor.camera_result(120.4, True, self.pose)
         supervisor.camera_result(120.6, True, self.pose)
         self.assertEqual(supervisor.state, 'NORMAL')
-        self.assertFalse(supervisor.recovered)  # Do not erase the learned map.
+        self.assertFalse(supervisor.recovered)  # Keep the learned map.
 
     def test_missing_route_during_camera_loss_stops_without_searching(self):
         supervisor = RecoverySupervisor()

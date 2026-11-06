@@ -1,8 +1,4 @@
-"""LiDAR occupancy mapping and heading-aware A*; no simulator access.
-
-Unknown cells are provisionally traversable. Every plan is checked again as new
-scans arrive. Robot footprint inflation supplies collision clearance.
-"""
+"""LiDAR map and A*. Unknown cells stay provisional; new scans recheck the route."""
 import heapq
 import math
 import cv2
@@ -76,11 +72,7 @@ class OccupancyMap:
 
 
 def astar(grid, start_xy, goal_xy=STAGING, heading=0., objective='time'):
-    """Optimal for this discrete 8-heading graph and specified nonnegative cost.
-
-    time cost = distance/0.18 + turn/0.9, an approximate stop/turn travel time.
-    Not a claim of globally minimum-time continuous robot dynamics.
-    """
+    """Eight-heading grid search. Time cost = distance/0.18 + turn/0.9; a discrete estimate, not globally optimal travel time."""
     start, goal = grid.cell(start_xy), grid.cell(goal_xy)
     if not grid.inside(start) or not grid.inside(goal):
         return None
@@ -123,7 +115,7 @@ def astar(grid, start_xy, goal_xy=STAGING, heading=0., objective='time'):
     while cells[-1] != initial:
         cells.append(previous[cells[-1]])
     points = [np.asarray(start_xy)] + [grid.xy(c[:2]) for c in cells[::-1][1:]] + [np.asarray(goal_xy)]
-    # Collision-checked shortcutting produces a shorter continuous polyline.
+    # Shortcut only where the map clearance allows it.
     result = [points[0]]
     i = 0
     while i < len(points)-1:

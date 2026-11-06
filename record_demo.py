@@ -1,8 +1,4 @@
-"""Record a genuine 1x-speed simulation and dashboard, without desktop capture.
-
-python record_demo.py --clean --output submission/media/nominal
-python record_demo.py --output submission/media/disturbed
-"""
+"""Record the room and dashboard at 1x. Use --help for recording options."""
 import argparse
 import csv
 import json

@@ -1,4 +1,4 @@
-"""Connect the physical simulator to sensor-only estimation and control."""
+"""Main loop linking MuJoCo, sensors, EKF and control."""
 
 import mujoco
 import numpy as np
@@ -21,7 +21,7 @@ HEADER = ['time', 'true_x', 'true_y', 'true_yaw', 'est_x', 'est_y', 'est_yaw',
 
 
 class Simulation:
-    dt = 0.02  # Estimator and controller at 50 Hz; physics at 500 Hz.
+    dt = 0.02  # 50Hz control/EKF; 500Hz physics.
 
     def __init__(self, seed=1, camera=True, automatic=True, scenario=None):
         self.scenario = scenario or Scenario(seed=seed)
@@ -113,7 +113,7 @@ class Simulation:
         if self.data.time < previous_time or not np.all(np.isfinite(self.data.qpos)):
             raise RuntimeError('Physics became unstable; stop and inspect the model settings.')
         current = self.encoders().copy()
-        # Injected encoder errors are bypassed in clean comparison runs.
+        # No added encoder noise in clean mode.
         if not self.scenario.clean:
             current += self.rng.normal(0, 0.002 if self.scenario.noisy else 0.0003, 2)
         wheel_delta = current-self.previous_encoder
@@ -130,7 +130,7 @@ class Simulation:
                                                     and self.data.time-self.last_camera_time > .8)
         if self.steps % 5 == 0:
             self.ranges = self.lidar.scan(self.model, self.data)
-            # Keep the geometric ray scan unchanged when injected errors are off.
+            # No added range noise in clean mode.
             if not self.scenario.clean:
                 self.ranges = np.clip(self.ranges+self.rng.normal(0, .015 if self.scenario.noisy else .003, len(self.ranges)), .03, 5.)
             if isinstance(self.driver, Navigator):
@@ -138,7 +138,7 @@ class Simulation:
         if self.camera is not None and self.steps % 10 == 0:
             self.image, self.measurement = self.camera.capture(self.data)
             self.display_camera_state = 'LIVE'
-            # Preserve the same short-circuit RNG draws as the original injection.
+            # Keep the seeded random draws in the same order.
             if self.scenario.dropout:
                 if 12 < self.data.time < 18:
                     self.display_camera_state = 'FORCED BLACKOUT'
@@ -165,8 +165,7 @@ class Simulation:
                             self.events.append(dict(time=float(self.data.time), event='Camera relocalisation from five consistent observations'))
                             self.recovery.rejections = 0
                             self.recovery.confirmations = 0
-                            # Discard stale learned occupancy after a global pose correction;
-                            # retain configured known geometry. Next scans rebuild evidence.
+                            # Rebuild learned occupancy after a pose correction; keep known-map geometry.
                             if isinstance(self.driver, Navigator):
                                 self.driver.map.logodds[:] = 0
                                 self.driver.map.observed[:] = False
@@ -195,24 +194,22 @@ class Simulation:
             if self.recovery.state != 'NORMAL':
                 self.driver.status = f'{self.recovery.state}: {self.recovery.reason}'
             if self.recovery.recovered:
-                # Rebuild scan evidence in the corrected frame instead of mixing
-                # pre-correction obstacle stamps with the recovered pose.
+                # Rebuild scan evidence in the corrected frame.
                 self.driver.map.logodds[:] = 0
                 self.driver.map.observed[:] = False
                 self.driver.last_plan = -10.
                 self.driver.freeze_plan = False
                 self.recovery.recovered = False
-        # Compact global planning does not cover turning corners. Keep the actual
-        # chassis/wheel footprint in the live LiDAR check for EVERY auto command.
+        # Check the actual body on every automatic move, including turning corners.
         if self.automatic and isinstance(self.driver, Navigator) and any(abs(v) > 1e-8 for v in self.command):
             if not local_motion_clear(*self.command, self.ranges, self.lidar.angles):
                 self.command = (0., 0.)
                 self.driver.status = 'Local body clearance stop'
         requested = wheel_commands(*self.command)/self.drive_calibration.scale
-        # UI diagnostics only: no input from these values returns to control.
+        # Display diagnostics only.
         self.display_wheel_requested = requested.copy()
         self.display_encoder_speed += .25*(wheel_delta/self.dt-self.display_encoder_speed)
-        # Feedback reads the same noisy encoder increments; no exact speed sensor.
+        # Use the noisy encoder readings, not exact wheel speed.
         self.data.ctrl[:] = self.wheel_loop.update(requested, wheel_delta, self.dt) if self.scenario.wheel_feedback else requested
         if self.scenario.noisy:
             self.data.ctrl[:] *= [.97, 1.02]
@@ -222,7 +219,7 @@ class Simulation:
         self.record_evaluation()
 
     def true_pose_for_evaluation(self):
-        # Truth is restricted to evaluation/display. Neither EKF nor driver calls this.
+        # True pose stays in evaluation/display.
         rotation = self.data.body('base').xmat.reshape(3, 3)
         return np.array([*self.data.body('base').xpos[:2], np.arctan2(rotation[1, 0], rotation[0, 0])])
 
@@ -254,7 +251,7 @@ class Simulation:
                               float(reference is not None), getattr(self.driver, 'tracking_error', 0)])
 
     def monitor_contacts(self):
-        """Evaluation only, at every 500-Hz physics step, including brief contacts."""
+        """Count obstacle contacts at every 500Hz physics step; evaluation only."""
         for contact in self.data.contact:
             g1, g2 = int(contact.geom1), int(contact.geom2)
             if ((g1 in self.robot_geoms and g2 in self.obstacle_geoms) or

@@ -1,4 +1,4 @@
-"""Shared colours and discontinuous path traces for live/saved displays."""
+"""Saved path selection and graph traces."""
 import colorsys
 import math
 
@@ -12,7 +12,7 @@ def path_bgr(path_id):
 
 
 def path_runs(samples, key='tracking_error_m'):
-    """Split whenever path changes or data is missing; never bridge a switch."""
+    """Start a new trace at each path change or missing sample."""
     result = []
     current = None
     for sample in samples:
@@ -30,13 +30,13 @@ def path_runs(samples, key='tracking_error_m'):
 
 
 def selected_path(history, requested=None):
-    """Resolve a display selection; None follows the latest reference."""
+    """None selects the latest reference."""
     ids = [version['path_id'] for version in history]
     return requested if requested in ids else (ids[-1] if ids else None)
 
 
 def step_path(history, requested, direction):
-    """Browse saved references without touching navigation or scoring."""
+    """Browse paths for display only."""
     ids = [version['path_id'] for version in history]
     if not ids:
         return None

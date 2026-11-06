@@ -1,4 +1,4 @@
-"""Sensor-only fault handling and drive feedback. No simulator state or fault flags."""
+"""Sensor-based recovery and wheel feedback; no true pose or injected-fault flags."""
 from collections import deque
 import numpy as np
 
@@ -8,7 +8,7 @@ from .world import CAMERA_OFFSET, MARKER_XY, WHEEL_RADIUS, WHEEL_SEPARATION
 
 
 def camera_pose(measurement, yaw):
-    """Invert known-marker range/bearing plus image-derived heading."""
+    """Camera-derived pose from the known marker."""
     distance, bearing = measurement
     camera = MARKER_XY-distance*np.array([np.cos(yaw+bearing), np.sin(yaw+bearing)])
     return np.r_[camera-CAMERA_OFFSET*np.array([np.cos(yaw), np.sin(yaw)]), wrap(yaw)]
@@ -22,7 +22,7 @@ def recovery_route_seconds(path, heading):
 
 
 class MarkerRelocalizer:
-    """Require five independent, stationary, consistent image poses before recovery."""
+    """Five consistent stationary camera poses before relocalising."""
     def __init__(self):
         self.frames = deque(maxlen=5)
 
@@ -42,8 +42,7 @@ class MarkerRelocalizer:
         if max(np.linalg.norm(poses[:, :2]-mean[:2], axis=1)) > .10 or max(abs(wrap(poses[:, 2]-mean[2]))) > .08:
             return None
         distance = float(np.mean([f[2] for f in self.frames]))
-        # Conservative, correlated pose covariance propagated from image range,
-        # bearing and heading errors. Includes an irreducible calibration floor.
+        # Propagate camera errors, including correlation and a calibration floor.
         def invert(z):
             return camera_pose(z[:2], z[2])
         z = np.r_[measurement, yaw]
@@ -61,7 +60,7 @@ class MarkerRelocalizer:
 
 
 class WheelFeedback:
-    """Bounded PI around noisy angle-derived wheel speed, with acceleration limiting."""
+    """Wheel-speed PI feedback, with output and acceleration limits."""
     def __init__(self):
         self.speed = np.zeros(2)
         self.target = np.zeros(2)
@@ -78,17 +77,13 @@ class WheelFeedback:
         error = self.target-self.speed
         proposed = np.clip(self.integral+1.5*dt*error, -1., 1.)
         output = self.target+.25*error+proposed
-        # Conditional integration prevents winding up against actuator saturation.
+        # Limit integral windup at the actuator bounds.
         self.integral = np.where((np.abs(output) < 7.8) | (output*error < 0), proposed, self.integral)
         return np.clip(self.target+.25*error+self.integral, -7.8, 7.8)
 
 
 class CameraDriveCalibration:
-    """Slow, bounded wheel-distance calibration from independent image-derived poses.
-
-    Only stable, nearby observations and sufficiently long motion windows qualify.
-    Fixed injected motor factors are never supplied to this class.
-    """
+    """Slow wheel-distance calibration from stable nearby camera poses. Injected drive factors are not inputs."""
     def __init__(self):
         self.scale = np.ones(2)
         self.anchor = None
@@ -144,13 +139,7 @@ class CameraDriveCalibration:
 
 
 def local_motion_clear(v, omega, ranges, angles):
-    """Check a one-second swept body envelope against live body-frame LiDAR hits.
-
-    Relative obstacle checks do not need global localisation. Include LiDAR offset,
-    enclosing chassis/wheels and a 1.5-cm range-noise allowance; unknown space is
-    not authorised by this helper. This is a sampled engineering guard, not proof
-    against every unmodelled obstacle or arbitrary measurement corruption.
-    """
+    """One-second swept-body LiDAR check, including sensor offset and 1.5cm padding. Sampled clearance check only; no guarantee for unseen obstacles or arbitrary noise."""
     ranges, angles = np.asarray(ranges), np.asarray(angles)
     if not np.all(np.isfinite(ranges)) or np.min(ranges) < .08:
         return False
@@ -172,7 +161,7 @@ def local_motion_clear(v, omega, ranges, angles):
 
 
 def recovery_grid(grid, pose):
-    """Extra planning slack prevents noisy boundary cells repeatedly breaking a route."""
+    """Extra route slack for noisy boundary cells."""
     from copy import copy
     from scipy.ndimage import distance_transform_edt
     from .planning import RESOLUTION
@@ -183,11 +172,7 @@ def recovery_grid(grid, pose):
 
 
 def marker_view_route(grid, pose, visited):
-    """Plan to a nearby predicted marker viewpoint using only learned occupancy.
-
-    Visibility is a hypothesis, confirmed only by camera detection on arrival.
-    Unknown cells remain provisional, just as in normal navigation.
-    """
+    """Find a possible marker viewpoint in the learned map. Camera detection still has to confirm visibility; unknown cells remain provisional."""
     from scipy.ndimage import distance_transform_edt
     from .planning import astar, RESOLUTION
     occupied = (grid.logodds > .5) | grid.known
@@ -226,12 +211,7 @@ def marker_view_route(grid, pose, visited):
 
 
 def inflation_escape(grid, pose, ranges, angles, target=None):
-    """Leave an inflated start cell using bounded, relative LiDAR clearance.
-
-    This does not shrink the planner's uncertainty margin. It lets a robot that is
-    physically clear move slowly away from an obstacle that its global covariance
-    envelope overlaps. Translation is limited by the caller's recovery budget.
-    """
+    """Slow local escape from an inflated cell using LiDAR. Keep global uncertainty unchanged and stay within the recovery budget."""
     if target is not None:
         delta = target['xy']-pose[:2]
         angle = wrap(np.arctan2(delta[1], delta[0])-pose[2])
@@ -268,7 +248,7 @@ def inflation_escape(grid, pose, ranges, angles, target=None):
 
 
 class RecoverySupervisor:
-    """Continue on encoder odometry during camera absence; recover verified faults."""
+    """Dead reckoning during camera loss; separate recovery for confirmed faults."""
     def __init__(self, camera_half_fov=None):
         self.camera_half_fov = (np.arctan(np.tan(np.deg2rad(27.5))*640/480)
                                 if camera_half_fov is None else camera_half_fov)
@@ -341,8 +321,7 @@ class RecoverySupervisor:
         self.transition('RELOCALISE', now, 'Implausible encoder increment')
 
     def budget_route(self, now, pose, path):
-        # A fixed timeout must not cut off a feasible slow route before its
-        # predicted travel/turn time. Keep an absolute bound on each episode.
+        # Allow time for the slow route, but keep a recovery time limit.
         finish = now+1.5*recovery_route_seconds(path, pose[2])+3.
         self.motion_until = max(self.motion_until, min(self.entered+100., finish))
         self.stop_until = self.motion_until+15.
@@ -354,20 +333,18 @@ class RecoverySupervisor:
             if self.state in ('NORMAL', 'SLOW'):
                 self.breadcrumbs.append(np.asarray(pose).copy())
         sigma = np.sqrt(max(np.linalg.eigvalsh(covariance[:2, :2]).max(), 0))
-        # Camera absence removes only visual corrections. Continue propagating
-        # wheel odometry, retain the route and let normal LiDAR planning run.
-        # No timeout or covariance threshold turns this into marker-search motion.
+        # No camera: keep wheel prediction and normal LiDAR replanning.
+        # Missing vision alone does not trigger marker search.
         if self.state == 'NORMAL' and camera_age > .8:
             self.transition('SLOW', now, 'Encoder + LiDAR navigation; no fresh camera correction')
         if self.state == 'SLOW':
-            # Scale both inputs equally to retain the tracker's turning curvature.
-            # Normal navigation already checks LiDAR and replans around obstacles.
+            # Scale forward and turning speed together to keep the same curve.
             if not path_available and phase == 'NAVIGATE':
                 return 0., 0.
             v, w = np.asarray(normal, dtype=float)*.75
             return (float(v), float(w)) if local_motion_clear(v, w, ranges, angles) else (0., 0.)
         if self.state == 'RELOCALISE':
-            # First settle for image consistency. No covariance reset is performed.
+            # Wait for consistent images; no covariance reset.
             elapsed = now-self.entered
             if elapsed < .5:
                 return 0., 0.
@@ -406,9 +383,7 @@ class RecoverySupervisor:
                     self.view_path = astar(planning_grid, pose[:2], self.view_goal, pose[2])
                 if self.view_path is None:
                     self.view_path = marker_view_route(planning_grid, pose, self.visited_views)
-                    # Prefer a verified viewpoint only if its route costs are
-                    # comparable. Blindly returning to an old pose can create
-                    # a loop when a nearer new viewpoint lies ahead.
+                    # Use the old verified viewpoint only if the route cost is comparable.
                     if self.last_visual_position is not None and np.linalg.norm(self.last_visual_position[:2]-pose[:2]) > .12:
                         if not any(np.linalg.norm(self.last_visual_position[:2]-p) < .3 for p in self.visited_views):
                             from .planning import astar
@@ -445,8 +420,7 @@ class RecoverySupervisor:
                 if now < self.motion_until:
                     return (v, w) if local_motion_clear(v, w, ranges, angles) else (0., 0.)
                 self.view_path = None
-            # Keep the retrace target until reached. Switching back to marker
-            # alignment on every tick would make the two controllers fight.
+            # Keep the retrace target until reached; avoid competing turn commands.
             if self.retreat_target is None and searched and sigma < .15:
                 while self.breadcrumbs and np.linalg.norm(self.breadcrumbs[-1][:2]-pose[:2]) < .18:
                     self.breadcrumbs.pop()
@@ -465,8 +439,7 @@ class RecoverySupervisor:
                     w = float(np.clip(1.3*angle, -.35, .35))
                     v = .04*direction if abs(angle) < .3 else 0.
             if now > self.motion_until:
-                # End the bounded retreat facing the reference, rather than
-                # timing out with the camera pointing away from it.
+                # Finish the retreat facing the reference.
                 v, w = 0., float(np.clip(1.4*error, -.45, .45)) if abs(error) > .04 else 0.
             if now > self.stop_until:
                 return 0., 0.

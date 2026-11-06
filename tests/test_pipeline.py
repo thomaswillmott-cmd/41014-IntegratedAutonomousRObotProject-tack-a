@@ -1,4 +1,4 @@
-"""Regression checks for physical motion, camera sensing and estimation."""
+"""Physical motion, camera and EKF checks."""
 
 import unittest
 

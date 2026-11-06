@@ -1,4 +1,4 @@
-"""Display faults must match unavailable frames; slip must differ from command error."""
+"""Camera display, speed error and slip checks."""
 import unittest
 from unittest.mock import Mock
 import numpy as np
@@ -33,7 +33,7 @@ class DisplayMetricChecks(unittest.TestCase):
                 sim.step()
             self.assertEqual(sim.display_camera_state, 'LIVE')
             self.assertTrue(np.any(sim.image))
-            # An absent marker with an otherwise working camera is not a blackout.
+            # Missing marker does not mean camera blackout.
             sim.measurement = None
             panel = dashboard(sim)
             self.assertTrue(np.any(panel[100:160, :640]))

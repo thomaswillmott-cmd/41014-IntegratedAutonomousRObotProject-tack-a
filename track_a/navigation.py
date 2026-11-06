@@ -1,7 +1,4 @@
-"""Hybrid navigation: LiDAR map/A*, LQR tracking, camera-gated pose docking.
-
-Inputs are estimated pose/covariance, scans and camera age. No truth API.
-"""
+"""LiDAR planning, LQR tracking and visual docking; estimated pose only."""
 from functools import lru_cache
 import numpy as np
 from scipy.linalg import solve_discrete_are

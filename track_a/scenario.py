@@ -1,4 +1,4 @@
-"""Reproducible experiments; geometry is not passed into sensor-map navigation."""
+"""Repeatable layouts and error settings; obstacle coordinates stay out of LiDAR navigation."""
 from dataclasses import dataclass, field
 import numpy as np
 
@@ -13,7 +13,7 @@ class Scenario:
     objective: str = 'time'
     mapping: str = 'lidar'
     controller: str = 'lqr'
-    clean: bool = False  # Disable injected errors; keep contact physics and image detection.
+    clean: bool = False  # Injections off; physics and image detection stay on.
     noisy: bool = False
     dropout: bool = False
     disturbance: bool = False

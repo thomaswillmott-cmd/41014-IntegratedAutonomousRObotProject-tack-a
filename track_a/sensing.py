@@ -1,4 +1,4 @@
-"""Simulated LiDAR rays and actual image-based ArUco detection."""
+"""LiDAR ray readings and rendered ArUco observations."""
 
 import cv2
 import json
@@ -33,7 +33,7 @@ class MarkerCamera:
         self.renderer = mujoco.Renderer(model, height=height, width=width)
         focal = height / (2 * np.tan(np.deg2rad(model.cam_fovy[model.camera('robot_camera').id]) / 2))
         self.K = np.array([[focal, 0, width/2], [0, focal, height/2], [0, 0, 1]], dtype=float)
-        self.distortion = np.zeros(5)  # Ideal simulated pinhole camera.
+        self.distortion = np.zeros(5)  # Ideal pinhole renderer.
         self.calibrated = False
         calibration_path = ROOT/'calibration'/'camera.json'
         if use_calibration and calibration_path.exists():

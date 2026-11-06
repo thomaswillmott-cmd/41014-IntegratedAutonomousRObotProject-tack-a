@@ -1,7 +1,4 @@
-"""Evaluation-only active-path history and continuous position error.
-
-This module never supplies pose or reference corrections to navigation/control.
-"""
+"""Path history and error measurements; no feedback to the robot."""
 import csv
 import json
 from pathlib import Path
@@ -12,7 +9,7 @@ from .world import WAYPOINTS
 
 
 def nearest_on_path(position, path):
-    """Euclidean distance to finite polyline segments (endpoints included)."""
+    """Nearest distance to the path, including its endpoints."""
     path = np.asarray(path, dtype=float).reshape(-1, 2)
     position = np.asarray(position, dtype=float)[:2]
     if len(path) == 0:
@@ -104,7 +101,7 @@ class PathEvaluation:
 
     @property
     def average_position_error(self):
-        """Arithmetic mean of XY error magnitudes over scored 10-Hz samples."""
+        """Mean XY error over the scored 10Hz samples."""
         return self.estimation_total/self.scored_count if self.scored_count else None
 
     @property

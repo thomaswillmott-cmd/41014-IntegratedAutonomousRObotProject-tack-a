@@ -1,4 +1,4 @@
-"""Grid refinement must retain world coverage and physical inflation distances."""
+"""Grid coverage and clearance distances."""
 import unittest
 import numpy as np
 from track_a.planning import OccupancyMap, RESOLUTION, ORIGIN, MAP_MAX
