@@ -184,18 +184,16 @@ Limitations: known initial/station poses, restricted random obstacle layouts,
 ideal camera rendering, no full SLAM, no electrical charging model, and no hardware
 validation. Gain trade-offs and broader failure rates need further matched trials.
 
-## Verification and submission
+## Verification and recording
 
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests
 ```
 
 Last verification: **51 tests passed**, including in a fresh Python environment
-installed from `requirements.txt` on Windows. The five-minute video must show task
-completion, a varied/disturbed trial, estimate, uncertainty and truth. Add its URL
-above and ensure markers can access the repository and video before submission.
+installed from `requirements.txt` on Windows.
 
-Recording genuine 1080p clips (silent, 1x simulation playback):
+Record 1080p clips (silent, 1x simulation playback):
 
 ```powershell
 .\.venv\Scripts\python.exe record_demo.py --clean --output submission/media/nominal
@@ -203,8 +201,7 @@ Recording genuine 1080p clips (silent, 1x simulation playback):
 ```
 
 Each recording includes room, camera, LiDAR, truth, EKF estimate and uncertainty,
-plus matching telemetry and assessment graphs. Generated videos are excluded from Git;
-host the finished video separately and link it here.
+plus matching telemetry and assessment graphs. The narrated demonstration is linked above.
 
 ## Sources and AI declaration
 

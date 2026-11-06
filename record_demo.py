@@ -99,7 +99,7 @@ def main():
         metadata = dict(seed=args.seed, clean=args.clean, fps=25, frames=frames,
                         playback='1x; 50 Hz simulation sampled at 25 fps, with initial/final frames',
                         video_duration_s=frames/25, simulated_duration_s=float(sim.data.time),
-                        docking_success=summary['docking_success'], audio='None; record your own narration',
+                        docking_success=summary['docking_success'], audio='None (silent recording)',
                         source_sha256=summary['source_sha256'])
         (args.output/'recording.json').write_text(json.dumps(metadata, indent=2), encoding='utf-8')
         print(json.dumps(metadata, indent=2), flush=True)
