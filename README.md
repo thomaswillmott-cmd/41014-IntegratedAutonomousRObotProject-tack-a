@@ -1,36 +1,36 @@
-# UTS 41014: TurtleBot3 Visual Waypoint Navigation
+# UTS 41014: TurtleBot3 Navigation
 
-**Assessment 4, Track A — simulation in MuJoCo**
+**INTEGRATED PROJECT - Track A - simulation in MuJoCo**
 
-Navigate an obstacle-filled room using 2D LiDAR, estimate robot pose from wheel
-encoders and an ArUco camera, and visually dock at a charging-station target.
-Navigation and control use the **EKF estimate**, never the simulator's true pose.
+Navigate a randomized object-filled space utilizing a LiDAR sensor, the ArUco camera and wheel encoders to estimate
+robot pose relevant to the environment and therefore navigate to the desired location, in this simulation the charging-station.
 
 | Submission details | Details |
 | --- | --- |
 | Project label | 1412 (self-selected; no official group number assigned) |
-| Student | Thomas Willmott — SID 25494826; individual implementation |
+| Student | Thomas Willmott - SID 25494826 individual implementation |
 | GitHub repository URL | [41014-IntegratedAutonomousRObotProject-tack-a](https://github.com/thomaswillmott-cmd/41014-IntegratedAutonomousRObotProject-tack-a) |
-| Five-minute demo video URL | TODO |
+| Five-minute demo video URL | [Narrated demo (4:28)](https://github.com/thomaswillmott-cmd/41014-IntegratedAutonomousRObotProject-tack-a/releases/tag/submission-video) |
 | Student contribution | Defined/refined project behaviour, ran simulation trials, reviewed results and requested corrections; video/submission preparation. Implementation and documentation were developed with the AI assistance declared below. |
+
+The video is attached as **Track-A-demo.mp4** on the linked release page. Download it to watch.
 
 ## Install and run
 
-Windows, Python 3.12 x64; tested with Python 3.12.10. Open a terminal in this folder:
+Windows, Python 3.12 x64 tested on Python version 3.12.10. When ready Open a terminal in this folder:
 
+Create Project environment and install requirments:
 ```powershell
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-Run one random layout; change the seed to select another reproducible layout:
-
+Run one random obstacle layout, change the seed to select another randomised and reproducible layout:
 ```powershell
 .\.venv\Scripts\python.exe run_robot.py --layout random --seed 22 --output results/seed22
 ```
 
 Run three randomly selected seeds consecutively, or repeat the reported batch:
-
 ```powershell
 .\.venv\Scripts\python.exe run_batch.py
 .\.venv\Scripts\python.exe run_batch.py --seeds 524882 407433 547246
@@ -38,7 +38,7 @@ Run three randomly selected seeds consecutively, or repeat the reported batch:
 
 All injected errors are enabled by default. Add `--headless` for faster execution
 without windows (camera rendering still needs OpenGL), or `--clean` to a single
-run for a comparison without injections. No ROS or physical webcam is required.
+run for a comparison without injections.
 
 Batches advance on completion or at 180 simulated seconds and save to timestamped
 folders. Single runs save on exit; without `--output`, they overwrite `results/latest`.
@@ -47,13 +47,15 @@ P pauses, R resets/clears the log, M toggles manual mode, and dashboard Esc exit
 ## A. Platform model
 
 State `q=[x,y,theta]`, input `u=[v,omega]`, wheel radius `r=0.033m`, axle separation
-`L=0.288m`. The planar differential-drive model is:
+`L=0.288m`.
+The planar differential-drive model is:
 
 ```text
 x_dot = v*cos(theta)        v = r*(wheel_rate_right + wheel_rate_left)/2
 y_dot = v*sin(theta)    omega = r*(wheel_rate_right - wheel_rate_left)/L
 theta_dot = omega
 ```
+ASSUMED ROLLING WITH NO SLIP
 
 The local reference-frame linearisation uses `dt=0.02s`,
 `A=[[1,0,0],[0,1,v_ref*dt],[0,0,1]]` and
@@ -68,6 +70,7 @@ integrates chassis/wheel dynamics and contacts, which can violate these assumpti
 
 ## B. Sensing, calibration and frames
 
+COORDINATE FRAMES
 ```text
 World (x/y floor, z up)
   ├─ Robot axle frame (x forward, y left, z up)
@@ -82,7 +85,7 @@ produce camera range, bearing and yaw, accounting for mount and marker orientati
 Camera observations correct the EKF; LiDAR provides mapping/clearance, not localisation.
 
 [camera.json](calibration/camera.json): 100 calibration views, reprojection RMS
-**0.037px**, held-out range RMSE **7.44mm** across 34 detections from 36 validation
+0.037px, held-out range RMSE 7.44mm across 34 detections from 36 validation
 poses. Zero distortion is constrained for the ideal pinhole renderer; these are
 simulation results, not physical-camera calibration.
 Reproduce calibration with `python calibrate_camera.py` (replaces the saved calibration).
@@ -214,6 +217,4 @@ Methods use [MuJoCo](https://mujoco.readthedocs.io/en/stable/python.html),
 [OpenCV PnP](https://docs.opencv.org/4.x/d5/d1f/calib3d_solvePnP.html) and
 [SciPy's discrete Riccati solver](https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.solve_discrete_are.html).
 
-**Generative AI:** OpenAI ChatGPT/Codex supported explanations, code generation,
-revision, debugging, tests, simulations and documentation. Record actual student
-contributions separately; acknowledge any additional tutorial code/sources used.
+**Generative AI:** OpenAI ChatGPT/Codex was used to help fill gaps in my theoretical understanding and connect my ideas with the mathematics and Python implementation. It also assisted with debugging and documentation. The simulation was assessed through repeated trials.
