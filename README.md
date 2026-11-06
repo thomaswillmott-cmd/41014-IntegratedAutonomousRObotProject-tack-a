@@ -203,8 +203,7 @@ Recording genuine 1080p clips (silent, 1x simulation playback):
 ```
 
 Each recording includes room, camera, LiDAR, truth, EKF estimate and uncertainty,
-plus matching telemetry and assessment graphs. See [video plan](submission/VIDEO_PLAN.md)
-for narration and the five-minute structure. Generated videos are excluded from Git;
+plus matching telemetry and assessment graphs. Generated videos are excluded from Git;
 host the finished video separately and link it here.
 
 ## Sources and AI declaration
